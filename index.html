@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoShield Engine — Cosmetic Toxin & Greenwash Auditor</title>
+    
+    <!-- Production UI Style & View Framework CDNs -->
+    <script src="https://tailwindcss.com"></script>
+    <script src="https://unpkg.com" crossorigin></script>
+    <script src="https://unpkg.com" crossorigin></script>
+    <script src="https://unpkg.com"></script>
+
+    <style type="text/css">
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased">
+
+    <!-- Deployment Target Injection Mount Anchor Point Node -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Secure Client-Side Local JSON Threat Matrix Dictionary Store
+        const LOCAL_DATA_STORE = {
+            "toxic_ingredients": {
+                "parabens": {
+                    "variants": ["methylparaben", "propylparaben", "butylparaben", "isobutylparaben"],
+                    "severity": "high",
+                    "reason": "Endocrine disruptor linked to hormone mimicry and reproductive development issues."
+                },
+                "formaldehyde_releasers": {
+                    "variants": ["dmdm hydantoin", "imidazolidinyl urea", "quaternium-15", "diazolidinyl urea"],
+                    "severity": "high",
+                    "reason": "Known human carcinogen and severe skin allergen that slowly releases toxic gas."
+                },
+                "sulfates": {
+                    "variants": ["sodium lauryl sulfate", "sls", "sodium laureth sulfate", "sles", "ammonium lauryl sulfate"],
+                    "severity": "medium",
+                    "reason": "Aggressive surfactant that dissolves natural skin lipids, causing severe barrier irritation."
+                },
+                "synthetic_fragrances": {
+                    "variants": ["fragrance", "parfum", "synthetic fragrance"],
+                    "severity": "medium",
+                    "reason": "Can conceal hundreds of unlisted chemical components linked to systemic skin contact allergies."
+                }
+            },
+            "greenwashing_buzzwords": {
+                "all_natural": {
+                    "triggers": ["all natural", "100% natural", "nature pure", "all-natural"],
+                    "context": "Legally unregulated consumer term. Often contains hidden petroleum elements without certifications."
+                },
+                "eco_friendly": {
+                    "triggers": ["eco friendly", "eco-conscious", "planet safe", "eco-friendly", "environmentally safe"],
+                    "context": "Broad marketing statement lacking verifiable scientific structural data on degradation footprints."
+                },
+                "organic_claims": {
+                    "triggers": ["organic", "certified organic", "made with organic ingredients"],
+                    "context": "Often printed loosely on front banners. Check the ingredient log for an official USDA or Ecocert stamp."
+                }
+            }
+        };
+
+        function App() {
+            const [inputUrl, setInputUrl] = useState('');
+            const [isAuditing, setIsAuditing] = useState(false);
+            const [runtimeError, setRuntimeError] = useState(null);
+            const [auditResults, setAuditResults] = useState(null);
+
+            const handleAuditSubmit = async (e) => {
+                e.preventDefault();
+                if (!inputUrl) return;
+
+                setIsAuditing(true);
+                setRuntimeError(null);
+                setAuditResults(null);
+
+                try {
+                    // Utilizing an open all-origins proxy gateway to safely pull live content without CORS blocks
+                    const proxyEndpoint = `https://allorigins.win{encodeURIComponent(inputUrl)}`;
+                    const networkCall = await fetch(proxyEndpoint);
+                    
+                    if (!networkCall.ok) {
+                        throw new Error("Unable to capture content from target domain gateway pipeline.");
+                    }
+                    
+                    const containerPayload = await networkCall.json();
+                    const rawHtmlContent = containerPayload.contents;
+
+                    if (!rawHtmlContent) {
+                        throw new Error("Target address returned empty page content structure or blocked bot profile framework.");
+                    }
+
+                    // Lowercase text strip to standardize text matching evaluations
+                    const cleanStringData = rawHtmlContent.toLowerCase();
+
+                    // Execution Array Scan Checkers
+                    const flaggedToxins = [];
+                    const toxicDb = LOCAL_DATA_STORE.toxic_ingredients;
+                    
+                    for (const [category, details] of Object.entries(toxicDb)) {
+                        for (const variant of details.variants) {
+                            if (cleanStringData.includes(variant)) {
+                                flaggedToxins.push({
+                                    category,
+                                    matched_variant: variant,
+                                    severity: details.severity,
+                                    reason: details.reason
+                                });
+                                break; // Break out to deduplicate identical group tags
+                            }
+                        }
+                    }
+
+                    const flaggedGreenwash = [];
+                    const greenDb = LOCAL_DATA_STORE.greenwashing_buzzwords;
+
+                    for (const [label, details] of Object.entries(greenDb)) {
+                        for (const trigger of details.triggers) {
+                            if (cleanStringData.includes(trigger)) {
+                                flaggedGreenwash.push({
+                                    label,
+                                    matched_trigger: trigger,
+                                    context: details.context
+                                });
+                                break;
+                            }
+                        }
+                    }
+
+                    // Dynamic Integrity Scoring Formula Calculations
+                    let calculatedScore = 100;
+                    flaggedToxins.forEach(item => {
+                        calculatedScore -= (item.severity === 'high' ? 25 : 15);
+                    });
+                    flaggedGreenwash.forEach(() => {
+                        calculatedScore -= 10;
+                    });
+                    
+                    calculatedScore = Math.max(0, calculatedScore);
+
+                    // Set state view metrics update
+                    setAuditResults({
+                        url_audited: inputUrl,
+                        transparency_score: calculatedScore,
+                        summary: {
+                            toxic_count: flaggedToxins.length,
+                            greenwash_count: flaggedGreenwash.length
+                        },
+                        flags: {
+                            toxic_ingredients: flaggedToxins,
+                            greenwashing_claims: flaggedGreenwash
+                        }
+                    });
+
+                } catch (error) {
+                    setRuntimeError(error.message || "An unhandled execution error occurred while processing webpage DOM tree arrays.");
+                } finally {
+                    setIsAuditing(false);
+                }
+            };
+
+            const computeScoreColor = (score) => {
+                if (score >= 80) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                if (score >= 50) return 'text-amber-700 bg-amber-50 border-amber-200';
+                return 'text-rose-700 bg-rose-50 border-rose-200';
+            };
+
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-12 font-sans">
+                    {/* Header View */}
+                    <header className="mb-12 text-center">
+                        <span className="text-xs font-extrabold tracking-widest text-emerald-700 bg-emerald-100/80 px-3 py-1.5 rounded-full uppercase">Hackathon Active Pipeline</span>
+                        <h1 className="text-4xl font-black text-slate-900 mt-4 tracking-tight">🌿 EcoShield Live</h1>
+                        <p className="mt-2 text-slate-500 max-w-xl mx-auto text-sm sm:text-base">Paste an online product or ingredient link into the input engine to audit product chemical toxicity levels and scan for greenwashing.</p>
+                    </header>
+
+                    {/* Single Centralized URL Input Box Interface */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8 transition-all hover:shadow-md">
+                        <form onSubmit={handleAuditSubmit} className="flex flex-col sm:flex-row gap-4">
+                            <input
+                                type="url"
+                                required
+                                value={inputUrl}
+                                onChange={(e) => setInputUrl(e.target.value)}
+                                className="flex-1 px-4 py-3.5 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all"
